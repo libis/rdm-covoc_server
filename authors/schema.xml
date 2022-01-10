@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="authors" version="1.6">
+
+  <fieldType 
+    name="token_text"
+    class="solr.TextField"
+    positionIncrementGap="100"
+    autoGeneratePhraseQueries="true"
+    indexed="true"
+    stored="true"
+    docValues="false"
+    multiValued="false"
+    uninvertible="false"
+    required="true"
+  >
+    <analyzer>
+      <tokenizer
+        class="solr.StandardTokenizerFactory"
+      />
+      <filter
+        class="solr.WhitespaceTokenizerFactory"
+        preserveOriginal="true"
+      />
+    </analyzer>
+  </fieldType>
+
+  <fieldType
+    name="lc_string"
+    class="solr.StrField"
+    indexed="true"
+    stored="true"
+    docValues="false"
+    multiValued="false"
+    uninvertible="false"
+    required="true"
+  >
+    <analyzer>
+      <filter
+        class="solr.LowerCaseFilterFactory"
+      />
+    </analyzer>
+  </fieldType>
+
+  <fieldType
+    name="litteral_string"
+    class="solr.StrField"
+    indexed="false"
+    stored="true"
+    docValues="false"
+    multiValued="false"
+    uninvertible="false"
+    required="true"
+  />
+  <fieldType
+    name="u_number"
+    class="solr.StrField"
+    indexed="true"
+    stored="true"
+    docValues="false"
+    multiValued="false"
+    uninvertible="false"
+    required="true"
+  >
+    <analyzer>
+      <tokenizer
+        class="solr.LowerCaseTokenizerFactory"
+      />
+      <filter
+        class="solr.PatternReplaceFilterFactory"
+        pattern="^(u)0+([^0]\\d*)$"
+        replacement="$1$2"
+      />
+    </analyzer>
+  </fieldType>
+  
+  <field name="uNumber" type="lc_string"/>
+  <field name="firstName" type="token_text"/>
+  <field name="lastName" type="token_text"/>
+  <field name="eMail" type="token_text"/>
+  <field name="affiliation" type="litteral_string"/>
+  <field name="orcid" type="token_text"/>
+</schema>

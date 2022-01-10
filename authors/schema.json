@@ -1,0 +1,130 @@
+{
+  "add-field-type": [
+    {
+      "name": "token_text",
+      "class": "solr.TextField",
+      "autoGeneratePhraseQueries": true,
+      "indexAnalyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+          "class": "solr.ASCIIFoldingFilterFactory",
+          "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.WordDelimiterGraphFilterFactory",
+            "catenateWords": 1,
+            "catenateNumbers": 1
+          }, {
+            "class": "solr.ShingleFilterFactory",
+            "maxShingleSize": 20,
+            "outputUnigramsIfNoShingles": true,
+            "tokenSeparator": "",
+            "fillerToken": ""
+          }, {
+            "class": "solr.NGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 8
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.WordDelimiterGraphFilterFactory",
+            "catenateWords": 1,
+            "catenateNumbers": 1
+          }, {
+            "class": "solr.ShingleFilterFactory",
+            "maxShingleSize": 20,
+            "outputUnigrams": false,
+            "outputUnigramsIfNoShingles": true,
+            "tokenSeparator": "",
+            "fillerToken": ""
+          }
+        ]
+      },
+      "indexed": true,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "required": true
+    }, {
+      "name": "lc_string",
+      "class": "solr.StrField",
+      "indexed": true,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "required": true
+    }, {
+      "name": "litteral_string",
+      "class": "solr.StrField",
+      "indexed": false,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "required": true
+    },
+    {
+      "name": "u_number",
+      "class": "solr.TextField",
+      "indexed": true,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "required": true,
+      "analyzer": {
+        "tokenizer": {
+          "class": "solr.LowerCaseTokenizerFactory"
+        },
+        "charFilters": [
+          {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^(u)0+([^0]\\d*)$",
+            "replacement": "$1$2"
+          }
+        ]
+      }
+    }
+  ],
+  "add-field": [
+    {
+      "name": "uNumber",
+      "type": "lc_string"
+    }, {
+      "name": "firstName",
+      "type": "token_text",
+      "multiValued": true
+    }, {
+      "name": "lastName",
+      "type": "token_text"
+    }, {
+      "name": "eMail",
+      "type": "token_text",
+      "required": false
+    }, {
+      "name": "affiliation",
+      "type": "litteral_string"
+    }, {
+      "name": "orcid",
+      "type": "token_text",
+      "required": false
+    }
+  ]
+}
