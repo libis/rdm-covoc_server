@@ -16,7 +16,7 @@
           }, {
             "class": "solr.PatternReplaceFilterFactory",
             "pattern": "^u0*",
-            "replacement": "u",
+            "replacement": "",
             "replace": "first"
           }
         ]
