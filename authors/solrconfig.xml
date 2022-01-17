@@ -775,14 +775,6 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
-      <str name="defType">edismax</str>
-      <float name="tie">0.075</float>
-      <str name="qf">
-        uNumber^900
-        firstName^400
-        lastName^300
-        eMail^100
-      </str>
 
       <!-- Default search field
          <str name="df">text</str> 
@@ -851,6 +843,37 @@
       <str name="echoParams">explicit</str>
       <str name="wt">json</str>
       <str name="indent">true</str>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/autocomplete" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">200</int>
+      <float name="tie">0.1</float>
+      <str name="defType">dismax</str>
+      <str name="fl">uNumber fullName eMail affiliation orcid score</str>
+      <str name="qf">
+        orcid^50
+        uNumber^100
+        lastName^20
+        firstName^20
+        eMail^10
+        lastName_sdx^5
+        firstName_sdx^5
+        lastName_part^2
+        firstName_part^2
+      </str>
+      <str name="q.op">AND</str>
+      <str name="pf">
+        fullName^20
+        lastName^10
+        firstName^5
+      </str>
+      <int name="ps">3</int>
     </lst>
   </requestHandler>
 
