@@ -7,8 +7,9 @@ class Array
     { 
       id: row['Username'],
       uNumber: row['Username'],
-      firstName: [row['Firstname'], row['KnownAs']].uniq,
+      firstName: row['Firstname'],
       lastName: row['Lastname'],
+      fullName: "#{row['Lastname']}, #{row['Firstname']}",
       eMail: row['Email'],
       affiliation: 'KU Leuven',
       orcid: row['Generic15']
@@ -26,7 +27,7 @@ options = {
   skip_blanks: true
 }
 
-File.open('data.json', 'wt') do |out|
+File.open(ARGV[1], 'wt') do |out|
   File.open(ARGV[0], 'rt') do |file|
     out.puts(CSV.parse(file, **options).reduce([], :row2hash).to_json)
   end

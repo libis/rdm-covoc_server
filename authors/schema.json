@@ -28,7 +28,7 @@
       "docValues": false,
       "multiValued": false,
       "uninvertible": false,
-      "indexAnalyzer": {
+      "analyzer": {
         "tokenizer": {
           "class": "solr.StandardTokenizerFactory"
         },
@@ -41,18 +41,10 @@
           }, {
             "class": "solr.ShingleFilterFactory",
             "maxShingleSize": 6,
+            "outputUnigrams": true,
             "outputUnigramsIfNoShingles": true,
             "tokenSeparator": "",
             "fillerToken": ""
-          },
-          {
-            "class": "solr.NGramFilterFactory",
-            "preserveOriginal": true,
-            "minGramSize": 3,
-            "maxGramSize": 8
-          },
-          {
-            "class": "solr.FlattenGraphFilterFactory"
           }
         ]
       },
@@ -62,17 +54,14 @@
         },
         "filters": [
           {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
             "class": "solr.LowerCaseFilterFactory"
-          },
-          {
-            "class": "solr.WordDelimiterGraphFilterFactory",
-            "catenateWords": 1,
-            "catenateNumbers": 1
-          },
-          {
+          }, {
             "class": "solr.ShingleFilterFactory",
-            "maxShingleSize": 20,
-            "outputUnigrams": false,
+            "maxShingleSize": 6,
+            "outputUnigrams": true,
             "outputUnigramsIfNoShingles": true,
             "tokenSeparator": "",
             "fillerToken": ""
@@ -80,31 +69,31 @@
         ]
       }
     }, {
-      "name": "token_text",
+      "name": "name_partial",
       "class": "solr.TextField",
       "autoGeneratePhraseQueries": true,
-      "indexAnalyzer": {
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "analyzer": {
         "tokenizer": {
           "class": "solr.StandardTokenizerFactory"
         },
         "filters": [
           {
-          "class": "solr.ASCIIFoldingFilterFactory",
-          "preserveOriginal": true
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
           }, {
             "class": "solr.LowerCaseFilterFactory"
           }, {
-            "class": "solr.WordDelimiterGraphFilterFactory",
-            "catenateWords": 1,
-            "catenateNumbers": 1
-          }, {
             "class": "solr.ShingleFilterFactory",
-            "maxShingleSize": 20,
+            "maxShingleSize": 6,
+            "outputUnigrams": true,
             "outputUnigramsIfNoShingles": true,
             "tokenSeparator": "",
             "fillerToken": ""
           }, {
-            "class": "solr.NGramFilterFactory",
+            "class": "solr.EdgeNGramFilterFactory",
             "preserveOriginal": true,
             "minGramSize": 3,
             "maxGramSize": 8
@@ -119,36 +108,119 @@
         },
         "filters": [
           {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
             "class": "solr.LowerCaseFilterFactory"
           }, {
-            "class": "solr.WordDelimiterGraphFilterFactory",
-            "catenateWords": 1,
-            "catenateNumbers": 1
-          }, {
             "class": "solr.ShingleFilterFactory",
-            "maxShingleSize": 20,
-            "outputUnigrams": false,
+            "maxShingleSize": 6,
+            "outputUnigrams": true,
             "outputUnigramsIfNoShingles": true,
             "tokenSeparator": "",
             "fillerToken": ""
           }
         ]
-      },
-      "indexed": true,
-      "stored": true,
-      "docValues": false,
-      "multiValued": false,
-      "uninvertible": false,
-      "required": true
+      }
     }, {
-      "name": "lc_string",
-      "class": "solr.StrField",
-      "indexed": true,
-      "stored": true,
+      "name": "name_soundex",
+      "class": "solr.TextField",
+      "autoGeneratePhraseQueries": true,
       "docValues": false,
       "multiValued": false,
       "uninvertible": false,
-      "required": true
+      "analyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.ShingleFilterFactory",
+            "maxShingleSize": 6,
+            "outputUnigrams": true,
+            "outputUnigramsIfNoShingles": true,
+            "tokenSeparator": "",
+            "fillerToken": ""
+          }, {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 16
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }, {
+            "class": "solr.BeiderMorseFilterFactory",
+            "nameType": "GENERIC",
+            "ruleType": "APPROX",
+            "concat": false,
+            "languageSet": "auto"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.ShingleFilterFactory",
+            "maxShingleSize": 6,
+            "outputUnigrams": true,
+            "outputUnigramsIfNoShingles": true,
+            "tokenSeparator": "",
+            "fillerToken": ""
+          }, {
+            "class": "solr.BeiderMorseFilterFactory",
+            "nameType": "GENERIC",
+            "ruleType": "APPROX",
+            "concat": false,
+            "languageSet": "auto"
+          }
+        ]
+      }
+    }, {
+      "name": "email_text",
+      "class": "solr.TextField",
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "indexAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 16
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }
+        ]
+      }
     }, {
       "name": "litteral_string",
       "class": "solr.StrField",
@@ -159,7 +231,7 @@
       "uninvertible": false,
       "required": true
     }, {
-      "name": "u_number",
+      "name": "orcid_number",
       "class": "solr.TextField",
       "indexed": true,
       "stored": true,
@@ -167,15 +239,45 @@
       "multiValued": false,
       "uninvertible": false,
       "required": true,
-      "analyzer": {
+      "indexAnalyzer": {
         "tokenizer": {
-          "class": "solr.LowerCaseTokenizerFactory"
+          "class": "solr.KeywordTokenizerFactory"
         },
         "charFilters": [
           {
             "class": "solr.PatternReplaceFilterFactory",
-            "pattern": "^(u)0+([^0]\\d*)$",
-            "replacement": "$1$2"
+            "pattern": "-",
+            "replacement": ""
+          }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^0+",
+            "replacement": ""
+          }
+        ],
+        "filters": [
+          {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 16
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "charFilters": [
+          {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "-",
+            "replacement": ""
+          }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^0+",
+            "replacement": ""
           }
         ]
       }
@@ -190,22 +292,74 @@
       "required": true
     }, {
       "name": "firstName",
-      "type": "token_text",
-      "multiValued": true
+      "type": "name_text",
+      "indexed": true,
+      "stored": true,
+      "required": true
     }, {
       "name": "lastName",
-      "type": "token_text"
+      "type": "name_text",
+      "indexed": true,
+      "stored": true,
+      "required": true
+    }, {
+      "name": "fullName",
+      "type": "name_text",
+      "indexed": true,
+      "stored": true,
+      "required": true
     }, {
       "name": "eMail",
-      "type": "token_text",
+      "type": "email_text",
+      "indexed": true,
+      "stored": true,
       "required": false
     }, {
       "name": "affiliation",
-      "type": "litteral_string"
+      "type": "litteral_string",
+      "indexed": false,
+      "stored": true,
+      "required": true
     }, {
       "name": "orcid",
-      "type": "token_text",
+      "type": "orcid_number",
+      "indexed": true,
+      "stored": true,
       "required": false
+    }
+  ],
+  "add-dynamic-field": [
+    {
+      "name": "*_part",
+      "type": "name_partial",
+      "indexed": true,
+      "stored": false
+    }, {
+      "name": "*_sdx",
+      "type": "name_soundex",
+      "indexed": true,
+      "stored": false
+    }
+  ],
+  "add-copy-field": [
+    {
+      "source": "firstName",
+      "dest": "firstName_part"
+    }, {
+      "source": "lastName",
+      "dest": "lastName_part"
+    }, {
+      "source": "fullName",
+      "dest": "fullName_part"
+    }, {
+      "source": "firstName",
+      "dest": "firstName_sdx"
+    }, {
+      "source": "lastName",
+      "dest": "lastName_sdx"
+    }, {
+      "source": "fullName",
+      "dest": "fullName_sdx"
     }
   ]
 }
