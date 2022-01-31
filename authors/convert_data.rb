@@ -7,11 +7,11 @@ class Array
     { 
       id: row['Username'],
       uNumber: row['Username'],
-      firstName: row['Firstname'],
+      firstName: row['KnownAs'],
       lastName: row['Lastname'],
-      fullName: "#{row['Lastname']}, #{row['Firstname']}",
+      fullName: "#{row['Lastname']}, #{row['KnownAs']}",
       eMail: row['Email'],
-      affiliation: 'KU Leuven',
+      affiliation: 'Associatie KU Leuven',
       orcid: row['Generic15']
     }
   end
