@@ -1,8 +1,36 @@
 require 'csv'
 require 'json'
+require 'progress_bar'
+
+class CSV
+  module ProgressBar
+    def progress_bar
+      ::ProgressBar.new(@io.size, :bar, :percentage, :elapsed, :eta)
+    end
+
+    def each
+      progress_bar = self.progress_bar
+
+      super do |row|
+        yield row
+        progress_bar.count = self.pos
+        progress_bar.increment!(0)
+      end
+    end
+  end
+
+  class WithProgressBar < CSV
+    include ProgressBar
+  end
+
+  def self.with_progress_bar
+    WithProgressBar
+  end
+end
 
 class Array
   def row2hash(row)
+
     self <<
     { 
       id: row['Username'],
@@ -27,8 +55,10 @@ options = {
   skip_blanks: true
 }
 
+line_count = `wc -l "#{ARGV[0]}"`.strip.split(' ')[0].to_i - 1
+
 File.open(ARGV[1], 'wt') do |out|
   File.open(ARGV[0], 'rt') do |file|
-    out.puts(CSV.parse(file, **options).reduce([], :row2hash).to_json)
+    out.puts(CSV::WithProgressBar.parse(file, **options).reduce([], :row2hash).to_json)
   end
 end
