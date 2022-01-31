@@ -13,5 +13,5 @@ ruby ${CORE}/convert_data.rb "$DATA_FILE" "${CORE}.json"
 
 echo "Indexing ${CORE} data ..."
 
-R=$(curl -X POST -H 'Content-type: application/json' -d "@${CORE}.json" "${SOLR_HOST}/solr/${CORE}/update?commit=true")
+R=$(curl -s -X POST -H 'Content-type: application/json' -d "@${CORE}.json" "${SOLR_HOST}/solr/${CORE}/update?commit=true")
 [ "$(echo "$R" | jq ".responseHeader.status")" = "0" ] || { echo "ERROR: $(echo "$R" | jq ".error.trace" | head -1)"; exit; }
