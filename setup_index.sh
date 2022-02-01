@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
-source .env
+source $(dirname $0)/vars.sh
 
+[[ -z "$1" ]] && echo "Usage: $0 <core name>" && exit
 CORE="$1"
-[ "${CORE}" == "" ] && echo "Usage: ${0} <core name>" && exit
-
-DATA_FILE="$2"
-[[ -z "$DATA_FILE" ]] && echo "Data file $DATA_FILE does not exist" && exit
 
 echo "Creating ${CORE} index ..."
 
@@ -20,5 +17,3 @@ echo "Creating ${CORE} schema ..."
 
 R=$(curl -s -X POST -H 'Content-type: application/json' -d @${CORE}/schema.json "${SOLR_HOST}/solr/${CORE}/schema")
 [ "$(echo "$R" | jq ".responseHeader.status")" = "0" ] || { echo "ERROR: $(echo "$R" | jq ".error.trace" | head -1)"; exit; }
-
-$(dirname $0)/update_index.sh "$1" "$2"

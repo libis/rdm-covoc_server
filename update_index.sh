@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
-source .env
+source $(dirname $0)/vars.sh
 
+[[ $# -lt 2 ]] && echo "Usage: $0 <core name> <data_file>" && exit
 CORE="$1"
-[ "${CORE}" == "" ] && echo "Usage: ${0} <core name>" && exit
-
 DATA_FILE="$2"
-[[ -z "$DATA_FILE" ]] && echo "Data file $DATA_FILE does not exist" && exit
 
-echo "Converting ${CORE} data from ${DATA_FILE} ..."
+[[ ! -f "$DATA_FILE" ]] && echo "Data file $DATA_FILE does not exist" && exit
 
-ruby ${CORE}/convert_data.rb "$DATA_FILE" "${CORE}.json"
+echo "Indexing data from ${DATA_FILE} into ${CORE} ..."
 
-echo "Indexing ${CORE} data ..."
-
-R=$(curl -s -X POST -H 'Content-type: application/json' -d "@${CORE}.json" "${SOLR_HOST}/solr/${CORE}/update?commit=true")
-[ "$(echo "$R" | jq ".responseHeader.status")" = "0" ] || { echo "ERROR: $(echo "$R" | jq ".error.trace" | head -1)"; exit; }
+bundle exec ruby ${CORE}/index_data.rb "$DATA_FILE"

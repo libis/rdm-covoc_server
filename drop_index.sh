@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-source .env
+source $(dirname $0)/vars.sh
 
+[[ -z "$1" ]] && echo "Usage: $0 <core name>" && exit
 CORE="$1"
-[ "${CORE}" == "" ] && echo "Usage: ${0} <core name>" && exit
 
 echo "Unloading and deleting ${CORE} index ..."
 R=$(curl -s "${SOLR_HOST}/solr/admin/cores?action=UNLOAD&core=${CORE}&deleteIndex=true&deleteDataDir=true&deleteInstanceDir=true")

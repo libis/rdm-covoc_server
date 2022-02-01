@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    builder (3.2.4)
     faraday (2.1.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
@@ -14,7 +15,21 @@ GEM
     rack (2.2.3)
     roda (3.52.0)
       rack
+    rsolr (2.4.0)
+      builder (>= 2.1.2)
+      faraday (>= 0.9.0)
     ruby2_keywords (0.0.5)
+    strings-ansi (0.2.0)
+    tty-cursor (0.7.1)
+    tty-progressbar (0.18.2)
+      strings-ansi (~> 0.2)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.8)
+      unicode-display_width (>= 1.6, < 3.0)
+    tty-screen (0.8.1)
+    tty-spinner (0.9.3)
+      tty-cursor (~> 0.7)
+    unicode-display_width (2.1.0)
 
 PLATFORMS
   x86_64-linux
@@ -24,6 +39,9 @@ DEPENDENCIES
   httpx
   puma
   roda
+  rsolr
+  tty-progressbar
+  tty-spinner
 
 BUNDLED WITH
    2.2.32
