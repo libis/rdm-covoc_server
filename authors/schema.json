@@ -6,7 +6,7 @@
       "docValues": false,
       "multiValued": false,
       "uninvertible": false,
-      "analyzer": {
+      "indexAnalyzer": {
         "tokenizer": {
           "class": "solr.KeywordTokenizerFactory"
         },
@@ -16,8 +16,81 @@
           }, {
             "class": "solr.PatternReplaceFilterFactory",
             "pattern": "^u0*",
-            "replacement": "",
+            "replacement": "u",
             "replace": "first"
+          }, {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 16
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^u0*",
+            "replacement": "u",
+            "replace": "first"
+          }
+        ]
+      }
+    }, {
+      "name": "orcid_number",
+      "class": "solr.TextField",
+      "indexed": true,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "required": true,
+      "indexAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "charFilters": [
+          {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "-",
+            "replacement": ""
+          }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^0+",
+            "replacement": ""
+          }
+        ],
+        "filters": [
+          {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 16
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "charFilters": [
+          {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "-",
+            "replacement": ""
+          }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^0+",
+            "replacement": ""
           }
         ]
       }
@@ -93,7 +166,7 @@
             "tokenSeparator": "",
             "fillerToken": ""
           }, {
-            "class": "solr.EdgeNGramFilterFactory",
+            "class": "solr.NGramFilterFactory",
             "preserveOriginal": true,
             "minGramSize": 3,
             "maxGramSize": 8
@@ -147,7 +220,7 @@
             "tokenSeparator": "",
             "fillerToken": ""
           }, {
-            "class": "solr.EdgeNGramFilterFactory",
+            "class": "solr.NGramFilterFactory",
             "preserveOriginal": true,
             "minGramSize": 3,
             "maxGramSize": 16
@@ -156,7 +229,7 @@
           }, {
             "class": "solr.BeiderMorseFilterFactory",
             "nameType": "GENERIC",
-            "ruleType": "APPROX",
+            "ruleType": "EXACT",
             "concat": false,
             "languageSet": "auto"
           }
@@ -173,6 +246,11 @@
           }, {
             "class": "solr.LowerCaseFilterFactory"
           }, {
+            "class": "solr.PatternReplaceFilterFactory",
+            "pattern": "^u?[0-9]+$",
+            "replacement": "",
+            "replace": "first"
+          }, {
             "class": "solr.ShingleFilterFactory",
             "maxShingleSize": 6,
             "outputUnigrams": true,
@@ -182,7 +260,7 @@
           }, {
             "class": "solr.BeiderMorseFilterFactory",
             "nameType": "GENERIC",
-            "ruleType": "APPROX",
+            "ruleType": "EXACT",
             "concat": false,
             "languageSet": "auto"
           }
@@ -202,10 +280,10 @@
           {
             "class": "solr.LowerCaseFilterFactory"
           }, {
-            "class": "solr.EdgeNGramFilterFactory",
+            "class": "solr.NGramFilterFactory",
             "preserveOriginal": true,
             "minGramSize": 3,
-            "maxGramSize": 16
+            "maxGramSize": 8
           }, {
             "class": "solr.FlattenGraphFilterFactory"
           }
@@ -230,57 +308,6 @@
       "multiValued": false,
       "uninvertible": false,
       "required": true
-    }, {
-      "name": "orcid_number",
-      "class": "solr.TextField",
-      "indexed": true,
-      "stored": true,
-      "docValues": false,
-      "multiValued": false,
-      "uninvertible": false,
-      "required": true,
-      "indexAnalyzer": {
-        "tokenizer": {
-          "class": "solr.KeywordTokenizerFactory"
-        },
-        "charFilters": [
-          {
-            "class": "solr.PatternReplaceFilterFactory",
-            "pattern": "-",
-            "replacement": ""
-          }, {
-            "class": "solr.PatternReplaceFilterFactory",
-            "pattern": "^0+",
-            "replacement": ""
-          }
-        ],
-        "filters": [
-          {
-            "class": "solr.EdgeNGramFilterFactory",
-            "preserveOriginal": true,
-            "minGramSize": 3,
-            "maxGramSize": 16
-          }, {
-            "class": "solr.FlattenGraphFilterFactory"
-          }
-        ]
-      },
-      "queryAnalyzer": {
-        "tokenizer": {
-          "class": "solr.KeywordTokenizerFactory"
-        },
-        "charFilters": [
-          {
-            "class": "solr.PatternReplaceFilterFactory",
-            "pattern": "-",
-            "replacement": ""
-          }, {
-            "class": "solr.PatternReplaceFilterFactory",
-            "pattern": "^0+",
-            "replacement": ""
-          }
-        ]
-      }
     }
   ],
   "add-field": [
