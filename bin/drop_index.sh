@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-source $(dirname $0)/vars.sh
+[ -f .env ] && source .env
 
-[[ -z "$1" ]] && echo "Usage: $0 <core name>" && exit
-CORE="$1"
+CORE="${CORE:-$1}"
+[ -z "$CORE" ] && { echo "Usage: $0 <core name>"; exit; }
+[ -z "$SOLR_HOST" ] && { echo "ERROR: 'SOLR_HOST' needs to be set."; exit; }
 
 echo "Unloading and deleting ${CORE} index ..."
 R=$(curl -s "${SOLR_HOST}/solr/admin/cores?action=UNLOAD&core=${CORE}&deleteIndex=true&deleteDataDir=true&deleteInstanceDir=true")
