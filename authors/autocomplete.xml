@@ -1,0 +1,98 @@
+  <requestHandler name="/any" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">400</int>
+      <float name="tie">0.1</float>
+      <str name="defType">edismax</str>
+      <str name="fl">uNumber fullName eMail affiliation orcid score</str>
+      <str name="qf">
+        lastName^20
+        firstName^20
+        uNumber^15
+        eMail^10
+        orcid^10
+        lastName_part^5
+        firstName_part^5
+        lastName_sdx^2
+        firstName_sdx^2
+      </str>
+      <str name="sow">true</str>
+      <str name="q.op">AND</str>
+      <str name="pf">
+        fullName^20
+        lastName^10
+        firstName^5
+      </str>
+      <int name="ps">3</int>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/name" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">400</int>
+      <float name="tie">0.1</float>
+      <str name="defType">dismax</str>
+      <str name="fl">uNumber fullName eMail affiliation orcid score</str>
+      <str name="qf">
+        lastName^20
+        firstName^20
+        lastName_part^5
+        firstName_part^5
+        lastName_sdx^2
+        firstName_sdx^2
+      </str>
+      <str name="sow">true</str>
+      <str name="q.op">AND</str>
+      <str name="pf">
+        fullName^20
+        lastName^10
+        firstName^5
+      </str>
+      <int name="ps">3</int>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/email" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">400</int>
+      <float name="tie">0.1</float>
+      <str name="defType">dismax</str>
+      <str name="fl">uNumber fullName eMail affiliation orcid score</str>
+      <str name="qf">
+        eMail
+      </str>
+      <str name="sow">true</str>
+      <str name="q.op">AND</str>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/number" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">400</int>
+      <float name="tie">0.1</float>
+      <str name="defType">dismax</str>
+      <str name="fl">uNumber fullName eMail affiliation orcid score</str>
+      <str name="qf">
+        uNumber^20
+        orcid^15
+      </str>
+      <str name="sow">true</str>
+      <str name="q.op">AND</str>
+    </lst>
+  </requestHandler>
+
