@@ -1,6 +1,7 @@
 STAGE ?= dev
 
 include env.$(STAGE)
+include .env
 export
 
 .SILENT:
@@ -24,12 +25,28 @@ push: ## Push Docker image (only in prod stage)
 		echo "Not in production stage. Pushing not allowed."; \
 	fi
 
-CP=rsync --info=name1,name2,del -ptgo
+CP=rsync --recursive --info=name1,name2,del -ptgo
 
 update: ## Update the script files in the image
 	echo "Updating files in Docker image ..."
-	$(CP) *.sh					image/bin/
-	$(CP) Gemfile*			image/
-	$(CP)	server/*			image/bin/
-	$(CP) authors/*	    image/authors/
-	
+	$(CP) Gemfile*      image/
+	$(CP) bin/          image/bin/
+	$(CP)	server/       image/
+	$(CP) authors/      image/authors/
+
+run: ## Run the server locally
+	cd server && bundle exec rackup -o 0.0.0.0 -p 9292
+
+covoc_drop:
+	./bin/drop_index.sh
+
+covoc_create:
+	./bin/create_index.sh
+
+covoc_load:
+	./bin/load_index.sh
+
+covoc_recreate: drop_index create_index load_index
+
+covoc_config:
+	./bin/config_index.sh
