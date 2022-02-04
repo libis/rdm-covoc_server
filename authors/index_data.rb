@@ -12,7 +12,7 @@ class CSV
     attr_accessor :progressbar
 
     def progressbar
-      return @progress_bar ||= TTY::ProgressBar.new("Reading data (:percent)\tETA: :eta_time (:eta)\t[:current_byte/:total_byte @ :byte_rate/s]", total: @io.size)
+      return @progress_bar ||= TTY::ProgressBar.new("Reading data (:percent)\tETA: :eta_time (:eta) [:current_byte/:total_byte @ :byte_rate/s]", total: @io.size)
     end
 
     def each
@@ -74,14 +74,14 @@ core = ARGV[1] || File.basename(File.dirname(__FILE__))
 
 File.open(ARGV[0], 'rt') do |file|
   a = CSV::WithProgressBar.parse(file, **options)
-  bar = TTY::ProgressBar.new("Formatting   (:percent)\tETA: :eta_time (:eta)\t[:current/:total @ :rate/s]", total: a.size)
+  bar = TTY::ProgressBar.new("Formatting   (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size)
   a = a.reduce([]) do |memo, data|
     memo << Indexer.transform(data)
     bar.advance
     memo
   end
   bar.complete
-  bar = TTY::ProgressBar.new("Indexing     (:percent)\tETA: :eta_time (:eta)\t[:current/:total @ :rate/s]", total: a.size)
+  bar = TTY::ProgressBar.new("Indexing     (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size)
   indexer = Indexer.new(ENV['SOLR_HOST'], core)
   bar.advance(0)
   a.each_slice(100) do |slice|
