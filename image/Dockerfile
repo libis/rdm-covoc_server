@@ -5,7 +5,7 @@ ENV LANG=C.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
- && apt-get -qq install -y --no-install-recommends build-essential \
+ && apt-get -qq install -y --no-install-recommends build-essential curl jq \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -25,7 +25,7 @@ USER app
 
 ENV PATH="/home/app/bin:${PATH}"
 
-COPY --chown=app:app ./bin ./bin/
+COPY --chown=app:app . ./
 RUN chmod +x ./bin/*
 
-CMD ["irb"]
+CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
