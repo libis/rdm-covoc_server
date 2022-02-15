@@ -4,22 +4,22 @@ require 'json'
 require 'tty-progressbar'
 require 'tty-spinner'
 require 'rsolr'
-# require 'faraday'
-# require 'httpx/adapters/faraday'
+
+IsTTY = !ENV["NO_TTY"]
 
 class CSV
   module ProgressBar
     attr_accessor :progressbar
 
     def progressbar
+      return nil unless IsTTY
       return @progress_bar ||= TTY::ProgressBar.new("Reading data (:percent)\tETA: :eta_time (:eta) [:current_byte/:total_byte @ :byte_rate/s]", total: @io.size)
     end
 
     def each
-
       super do |row|
         yield row
-        progressbar.current = self.pos
+        progressbar.current = self.pos if IsTTY
       end
     end
   end
@@ -72,20 +72,21 @@ options = {
 
 core = ARGV[1] || File.basename(File.dirname(__FILE__))
 
+
 File.open(ARGV[0], 'rt') do |file|
   a = CSV::WithProgressBar.parse(file, **options)
-  bar = TTY::ProgressBar.new("Formatting   (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size)
+  bar = TTY::ProgressBar.new("Formatting   (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size) if IsTTY
   a = a.reduce([]) do |memo, data|
     memo << Indexer.transform(data)
-    bar.advance
+    bar.advance if IsTTY
     memo
   end
-  bar.complete
-  bar = TTY::ProgressBar.new("Indexing     (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size)
+  bar.complete if IsTTY
+  bar = TTY::ProgressBar.new("Indexing     (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size) if IsTTY
   indexer = Indexer.new(ENV['SOLR_HOST'], core)
-  bar.advance(0)
+  bar.advance(0) if IsTTY
   a.each_slice(100) do |slice|
     indexer.update(slice)
-    bar.advance(100)
+    bar.advance(100) if IsTTY
   end
 end
