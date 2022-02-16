@@ -58,6 +58,7 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
   if (!modal) {
     // Create modal dialog
     let dialog = document.createElement('div');
+    document.body.appendChild(dialog);
     dialog.outerHTML =
       '<div id="' + id + '" class="modal" tabindex="-1" aria-labelledby="' + id + '-title" role="dialog" style="margin-top: 5rem">' + 
         '<div class="modal-dialog" role="document">' + 
