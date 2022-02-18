@@ -59,6 +59,7 @@ class Indexer
     unless response.response[:status] == 200
       puts "Error: #{response.response[:body].inspect}"
     end
+    solr.commit
   end
 end
 
