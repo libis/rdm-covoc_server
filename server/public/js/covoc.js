@@ -44,7 +44,7 @@ var pubSearchResultsId = 'publication-search-results';
 var pubElementIdAttribute = 'data-publication-element-id';
 var pubSearchIconText = 'Search in Lirias';
 
-//Selector for all the publication compound fields
+// Selector for all the publication compound fields
 var publicationSelector = "#metadata_publication ~ .dataset-field-values .edit-compound-field";
 
 /* The browser will run this code the first time the editor is opened and each time a multiple field instance is 
@@ -343,8 +343,10 @@ function publicationQuery(str, start) {
   fetch("/covoc/publications?q=" + str + '&from=' + start + '&per_page=' + page_size)
   .then(response => response.json())
   .then(data => {
-    let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
+    // Grab the Lirias host
+    liriasHost = data.lirias
     // Clear table content
+    let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
     table.innerHTML = ''
     // Add pagination header
     if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
@@ -376,7 +378,7 @@ function publicationQuery(str, start) {
       // Add a table row for the doc
       table.innerHTML += 
       '<tr>' +
-        '<td><a href="' + doc.url + '" target="_blank">' + doc.title + '</a></td>' +
+        '<td><a href="' + doc.link + '" target="_blank">' + doc.title + '</a></td>' +
         '<td>' + 
           '<span ' + 
             'class="btn btn-default btn-xs glyphicon glyphicon-import pull-right" title="import" ' + 
@@ -403,7 +405,6 @@ function importPublicationData(id, citation, sourceId, doi, issn, url) {
   let urlInput = compoundElement.children[4].querySelector('input');
   // Fill-in name and affiliation
   idInput.value = sourceId;
-  citationInput.value = citation;
   urlInput.value = url;
 
   // 2nd child is the identifier scheme wrapper and contains multiple elements:
@@ -439,6 +440,30 @@ function importPublicationData(id, citation, sourceId, doi, issn, url) {
     identifierSchemeText.textContent = identifierSchemeSelect.children[0].text;
     identifierSchemeSelect.value = '';
   }
+
+  // Get the citation data from reporting database
+  fetch('/covoc/citation?id=' + sourceId)
+  .then(response => response.json())
+  .then(data => {
+    if (data.status == 200) {
+      // Fill in the citation
+      citationInput.value = data.citation;
+    } else {
+      // No citation found
+      citationInput.value = '';
+      message = 'Citation service ';
+      if (data.status == 404) {
+        alert('Citation service could not find the publication.\n\nPlease copy and paste the citation yourself.');
+      } else if (data.status = 503) {
+        alert('Citation service temporarily unavailable.\n\nPlease try again later.');
+      } else {
+        alert('Citation service returned an error ' + 
+          (data.error ? ': ' + data.error : ' status: ' + data.status) +
+          '.\n\nPlease copy and paste the citation yourself.'
+        );
+      }
+    }
+  });
   // Close the dialog box when the import is done
   $('#' + pubModalId).modal('hide');
 }

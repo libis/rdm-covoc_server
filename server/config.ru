@@ -18,13 +18,14 @@ class App < Roda
 
   solr_host = ENV['SOLR_HOST'] || 'http://localhost:8983'
   limo_host = ENV['LIMO_HOST'] || 'limo.libis.be'
-  log_level = ENV['LOG_LEVEL'] || 'error'
+  lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2.kuleuven.be'
+  logging = ENV['LOG_LEVEL'] == 'debug'
 
   solr = Faraday.new(solr_host, params: {indent: false}) do |f|
     f.use Faraday::Request::UrlEncoded
     f.request :json
     f.response :json
-    f.response :logger, nil, {headers: true, bodies: false, log_level: log_level}
+    f.response :logger, nil, {headers: true, bodies: false} if logging
     f.adapter :httpx
   end
 
@@ -32,7 +33,13 @@ class App < Roda
     f.use Faraday::Request::UrlEncoded
     f.request :json
     f.response :json
-    f.response :logger, nil, {headers: true, bodies: false, log_level: log_level}
+    f.response :logger, nil, {headers: true, bodies: false} if logging
+    f.adapter :httpx
+  end
+
+  lirias = Faraday.new(lirias_host, ssl: {verify: false}) do |f|
+    f.use Faraday::Request::UrlEncoded
+    f.response :logger, nil, {headers: true, bodies: false} if logging
     f.adapter :httpx
   end
 
@@ -51,7 +58,7 @@ class App < Roda
 
       # Get parameters
       str = typecast_params.str('q')
-      next unless str
+      return NO_RESULT unless str
 
       from = [min_from, typecast_params.int('from') || default_from].max
       per_page = [min_page, typecast_params.int('per_page') || default_page].max
@@ -83,7 +90,6 @@ class App < Roda
 
       # Check response error
       unless res&.success?
-        Logger($stdout).new.error("Solr response [#{res&.status}] #{res&.headers}")
         return NO_RESULT
       end
 
@@ -96,6 +102,9 @@ class App < Roda
       prev_start = [min_from, res['start'] - per_page].max
       res['next'] = next_start if next_start < res['numFound'] + min_from
       res['prev'] = prev_start if res['start'] != min_from
+
+      # Pass the Lirias host to the client
+      res['lirias'] = lirias_host
 
       # Finally, return the response
       res
@@ -112,7 +121,7 @@ class App < Roda
 
       # Get parameters
       str = typecast_params.str('q')
-      next unless str
+      return NO_RESULT unless str
 
       from = [min_from, typecast_params.int('from') || default_from].max
       per_page = [min_page, typecast_params.int('per_page') || default_page].max
@@ -143,7 +152,6 @@ class App < Roda
 
       # Check response error
       unless res.success?
-        Logger($stdout).new.error("Limo response [#{res.status}] #{res.headers}")
         return NO_RESULT
       end
 
@@ -169,10 +177,11 @@ class App < Roda
             id: data.dig('id')&.gsub(/^LIRIAS/i, ''),
             title: title,
             citation: "#{creator}. &quot;#{title}.&quot; #{ispartof}",
-            url: url
+            link: url
           }.tap do |x|
             x[:doi] = doi if doi
             x[:issn] = issn if issn
+            x[:url] = "https://doi.org/#{doi}" if doi
           end
         end
       }
@@ -186,6 +195,43 @@ class App < Roda
       # Finally, return the response
       res
 
+    end
+
+    # Entrypoint for the citation lookup
+    r.get 'citation' do
+
+      # Get parameters
+      id = typecast_params.str('id')
+      next unless id
+
+      # Query Lirias reporting database for citation
+      res = lirias.get('/reports/report/publicationAPA', nil, ) do |req|
+        req.headers[:content_type] = 'application/xml'
+        req.params['Pub_ID'] = id
+        req.params['Direct'] = nil
+        req.options.timeout = 2
+      end
+
+      # Check response status
+      case res.status
+      when 503
+        # Temporary error
+        response.status = 503
+        { citation: '', error: 'Database in use', status: 503 }
+      when 200
+        if res.body =~ /<citation>(.*)<\/citation>/
+          # Return the citation
+          response.status = 200
+          { citation: $1, status: 200 }
+        else
+          response.status = 404
+          { citation: '', error: 'Data not found', status: 404 }
+        end
+      else
+        response.status = res.status
+        { citation: '', status: res.status }
+      end
+      
     end
 
   end
