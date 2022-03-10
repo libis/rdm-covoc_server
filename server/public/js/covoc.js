@@ -106,7 +106,9 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
       let nameElement = document.getElementById(inputID);
       // Fill in the input field text in the searchBox ...
       let searchBox = document.getElementById(searchBoxId);
-      searchBox.value = nameElement.value;
+      if (nameElement.value) {
+        searchBox.value = nameElement.value;
+      }
       // ... and launch a query
       queryFunction(nameElement.value, 0);
       // Let the searchBox know where to write the data
@@ -172,6 +174,38 @@ function putSearchIcon(selector, childNr, elementIdAttribute, modalId, searchIco
   })
 }
 
+// Creates a unique id that can be used as element id attribute
+function createId() {
+	return 'xxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxx'.replace(/x/g, function (c) {
+	var r = Math.random() * 16 | 0;
+	return r.toString(16);
+	});
+}
+
+// Encode special characters in the string to make them safe to use in HTML
+function strEncode(str) {
+  if (!str) {
+    str = '';
+  }
+  return str.replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#039;");
+}
+
+// Decode string from the encoding in the function above
+function strDecode(str) {
+  if (!str) {
+    str = '';
+  }
+  return str.replace(/&#039;/g, "'")
+  .replace(/&quot;/g, '"')
+  .replace(/&gt;/g, ">")
+  .replace(/&lt;/g, "<")
+  .replace(/&amp;/g, "&");
+}
+
 var page_size = 10; // Number of results that will be displayed on a single page
 
 // Lauches a query to the external vocabulary server and fills in the results in the table element of the dialog searchBox
@@ -235,8 +269,8 @@ function personQuery(str, start) {
     }
     // Iterate over results
     data.docs.forEach((doc) => {
-      // Get ID of target input element
-      let id = document.getElementById(personSearchBoxId).getAttribute(personElementIdAttribute);
+      // id for the import button
+      let id = createId();
       // Add a table row for the doc
       table.innerHTML += 
       '<tr title="' + doc.eMail + '">' +
@@ -246,9 +280,13 @@ function personQuery(str, start) {
           ((doc.orcid) ? '<a href="https://orcid.org/' + doc.orcid + '" target="_blank">' + doc.orcid + '</a>' : '') + 
         '</td>' + 
         '<td>' + 
-          '<span ' + 
+          '<span id="' + id + '" ' + 
             'class="btn btn-default btn-xs glyphicon glyphicon-import pull-right" title="import" ' + 
-            'onclick="importPersonData(\'' + id + '\', \'' + doc.fullName + '\', \'' + doc.eMail + '\', \'' + doc.affiliation + '\', \'' + (doc.orcid || '') + '\');">' + 
+            'data-covoc-fullname="' + strEncode(doc.fullName) + '" ' +
+            'data-covoc-email="' + strEncode(doc.eMail) + '" ' +
+            'data-covoc-affiliation="' + strEncode(doc.affiliation) + '" ' +
+            'data-covoc-orcid="' + strEncode(doc.orcid) + '" ' +
+            'onclick="importPersonData(\'' + id + '\');">' + 
           '</span>' + 
         '</td>' + 
       '</tr>';
@@ -258,9 +296,18 @@ function personQuery(str, start) {
 
 // Import the query result data into the metadata form
 // arguments:
-// - id (String): identifier of the name input field
-// - fullName, emailAddress, affiliation and orcid (String): person data
-function importPersonData(id, fullName, emailAddress, affiliation, orcid) {
+// - dataID: identifier of the element that holds the covoc data attributes
+function importPersonData(dataId) {
+  // Get ID of target input element
+  let id = document.getElementById(personSearchBoxId).getAttribute(personElementIdAttribute);
+  // Get the fullName from the data element attribute
+  let fullName = strDecode(document.getElementById(dataId).getAttribute('data-covoc-fullname'));
+  // Get the emailAddress from the data element attribute
+  let emailAddress = strDecode(document.getElementById(dataId).getAttribute('data-covoc-email'));
+  // Get the affiliation from the data element attribute
+  let affiliation = strDecode(document.getElementById(dataId).getAttribute('data-covoc-affiliation'));
+  // Get the orcid from the data element attribute
+  let orcid = strDecode(document.getElementById(dataId).getAttribute('data-covoc-orcid'));
   // Get the name input field
   let nameInput = document.getElementById(id);
   // Up to the compound element
@@ -373,16 +420,21 @@ function publicationQuery(str, start) {
     }
     // Iterate over results
     data.docs.forEach((doc) => {
-      // Get ID of target input element
-      let id = document.getElementById(pubSearchBoxId).getAttribute(pubElementIdAttribute);
+      // id for the import button
+      let id = createId();
       // Add a table row for the doc
       table.innerHTML += 
       '<tr>' +
         '<td><a href="' + doc.link + '" target="_blank">' + doc.title + '</a></td>' +
         '<td>' + 
-          '<span ' + 
+          '<span id="' + id + '" ' + 
             'class="btn btn-default btn-xs glyphicon glyphicon-import pull-right" title="import" ' + 
-            'onclick="importPublicationData(\'' + id + '\', \'' + doc.citation + '\', \'' + doc.id + '\', \'' + (doc.doi || '') + '\', \'' + (doc.issn || '') + '\', \'' + (doc.url || '') + '\');">' + 
+            'data-covoc-citation="' + strEncode(doc.citation) + '" ' +
+            'data-covoc-id="' + strEncode(doc.id) + '" ' +
+            'data-covoc-doi="' + strEncode(doc.doi) + '" ' +
+            'data-covoc-issn="' + strEncode(doc.issn) + '" ' +
+            'data-covoc-url="' + strEncode(doc.url) + '" ' +
+            'onclick="importPublicationData(\'' + id + '\');">' + 
           '</span>' + 
         '</td>' + 
       '</tr>';
@@ -392,9 +444,20 @@ function publicationQuery(str, start) {
 
 // Import the query result data into the metadata form
 // arguments:
-// - id (String): identifier of the related metadata input field
-// - citation, sourceId, doi, issn, url: publication data
-function importPublicationData(id, citation, sourceId, doi, issn, url) {
+// - dataID: identifier of the element that holds the covoc data attributes
+function importPublicationData(dataId) {
+  // Get ID of target input element
+  let id = document.getElementById(pubSearchBoxId).getAttribute(pubElementIdAttribute);
+  // Get the citation from the data element attribute
+  let citation = strDecode(document.getElementById(dataId).getAttribute('data-covoc-citation'));
+  // Get the sourceId from the data element attribute
+  let sourceId = strDecode(document.getElementById(dataId).getAttribute('data-covoc-id'));
+  // Get the doi from the data element attribute
+  let doi = strDecode(document.getElementById(dataId).getAttribute('data-covoc-doi'));
+  // Get the issn from the data element attribute
+  let issn = strDecode(document.getElementById(dataId).getAttribute('data-covoc-issn'));
+  // Get the url from the data element attribute
+  let url = strDecode(document.getElementById(dataId).getAttribute('data-covoc-url'));
   // Get the search input field
   let idInput = document.getElementById(id);
   // Up to the compound element
