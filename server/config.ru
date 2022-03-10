@@ -165,7 +165,7 @@ class App < Roda
           creator = [data.dig('display','creator')].flatten.first
           title = [data.dig('display','title')].flatten.first
           ispartof = [data.dig('display','ispartof')].flatten.first
-          url = [data.dig('links', 'backlink')].flatten.first
+          url = [data.dig('links', 'backlink')].flatten.last
           doi = nil
           issn = nil
           [data.dig('display','identifier')].flatten.each do |identifier|
