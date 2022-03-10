@@ -207,6 +207,7 @@ function strDecode(str) {
 }
 
 var page_size = 10; // Number of results that will be displayed on a single page
+var loading = '<img src="/covoc/image/giphy.gif" alt="... loading..." />';
 
 // Lauches a query to the external vocabulary server and fills in the results in the table element of the dialog searchBox
 
@@ -237,12 +238,13 @@ function personQuery(str, start) {
   if (!start) {
     start = 0;
   }
+  let table = document.querySelector('#' +  personSearchResultsId + ' tbody');
+  // Clear table content
+  table.innerHTML = loading;
   // Vocabulary search REST call
   fetch("/covoc/authors?q=" + str + '&from=' + start + '&per_page=' + page_size)
   .then(response => response.json())
   .then(data => {
-    let table = document.querySelector('#' +  personSearchResultsId + ' tbody');
-    // Clear table content
     table.innerHTML = ''
     // Add pagination header
     if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
@@ -386,15 +388,16 @@ function publicationQuery(str, start) {
   if (!start) {
     start = 0;
   }
+  // Clear table content
+  let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
+  table.innerHTML = loading;
   // Vocabulary search REST call
   fetch("/covoc/publications?q=" + str + '&from=' + start + '&per_page=' + page_size)
   .then(response => response.json())
   .then(data => {
+    table.innerHTML = ''
     // Grab the Lirias host
     liriasHost = data.lirias
-    // Clear table content
-    let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
-    table.innerHTML = ''
     // Add pagination header
     if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
       table.innerHTML += 
