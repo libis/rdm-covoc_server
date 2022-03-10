@@ -104,13 +104,13 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
       // Get the stored ID of the input field
       let inputID = e.relatedTarget.getAttribute(elementIdAttribute);
       let nameElement = document.getElementById(inputID);
-      // Fill in the input field text in the searchBox ...
       let searchBox = document.getElementById(searchBoxId);
       if (nameElement.value) {
+        // Fill in the input field text in the searchBox ...
         searchBox.value = nameElement.value;
+        // ... and launch a query
+        queryFunction(0);
       }
-      // ... and launch a query
-      queryFunction(nameElement.value, 0);
       // Let the searchBox know where to write the data
       searchBox.setAttribute(elementIdAttribute, inputID);
     });
@@ -127,10 +127,8 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
     document.getElementById(searchBoxId).addEventListener('keyup', function(e) {
       // Only if Enter key is pressed
       if (e.key === 'Enter') {
-        // Get string from searchBox ...
-        let str = this.value;
-        // ... and launch query ...
-        queryFunction(this.value, 0);
+        // Launch query with string from searchBox ...
+        queryFunction(0);
         // .. and prevent key to be added to the searchBox
         e.preventDefault();
       }
@@ -206,13 +204,40 @@ function strDecode(str) {
   .replace(/&amp;/g, "&");
 }
 
+// Generic table header with pagination links
+function tableHeader(table, data, queryFunctionName, start) {
+  // Add pagination header
+  if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
+    table.innerHTML += 
+    '<tr>' + 
+      '<td class="row" colspan="4">' +
+        '<div class="col-sm-2">' +
+          ((data.hasOwnProperty('prev'))
+            ? '<span class="btn btn-default btn-xs pull-left" accesskey="p" onclick="' + queryFunctionName + '(' + data.prev + ')">&lt;&lt;</span>'
+            : ''
+          ) +
+        '</div>' +
+        '<div class="col-sm-8 text-center">' +
+          (start + 1) + '-' + (start + data.docs.length) + ' of ' + data.numFound +
+        '</div>' +
+        '<div class="col-sm-2">' +
+          ((data.hasOwnProperty('next'))
+            ? '<span class="btn btn-default btn-xs pull-right" accesskey="n" onclick="' + queryFunctionName + '(' + data.next + ')">&gt;&gt;</span>'
+            : ''
+          ) +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+  }
+}
+
 var page_size = 10; // Number of results that will be displayed on a single page
-var loading = '<img src="/covoc/image/giphy.gif" alt="... loading..." />';
+var searchLoading = '<img src="/covoc/image/giphy.gif" alt="... loading..." />';
+var searchEmpty = 'Type your search term(s) and hit ENTER to search.';
 
 // Lauches a query to the external vocabulary server and fills in the results in the table element of the dialog searchBox
 
 /* arguments:
- *  - str (String): text to search for
  *  - start (Integer): start position of the results (for paginated results)
  * the result of the query is a JSON object with at least:
  *  - numFound (Integer): total number of results
@@ -231,44 +256,24 @@ var loading = '<img src="/covoc/image/giphy.gif" alt="... loading..." />';
  *  - per_page: the number of results to return per page
  */
 
-function personQuery(str, start) {
+function personQuery(start) {
+  str = document.getElementById(personSearchBoxId).value;
+  let table = document.querySelector('#' +  personSearchResultsId + ' tbody');
   if (!str) {
+    table.innerHTML = searchEmpty;
     return;
   }
   if (!start) {
     start = 0;
   }
-  let table = document.querySelector('#' +  personSearchResultsId + ' tbody');
-  // Clear table content
-  table.innerHTML = loading;
+  // Set loading animation
+  table.innerHTML = searchLoading;
   // Vocabulary search REST call
   fetch("/covoc/authors?q=" + str + '&from=' + start + '&per_page=' + page_size)
   .then(response => response.json())
   .then(data => {
-    table.innerHTML = ''
-    // Add pagination header
-    if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
-      table.innerHTML += 
-      '<tr>' + 
-        '<td class="row" colspan="4">' +
-          '<div class="col-sm-2">' +
-            ((data.hasOwnProperty('prev'))
-              ? '<span class="btn btn-default btn-xs pull-left" accesskey="p" onclick="personQuery(\'' + str + '\', ' + data.prev + ')">&lt;&lt;</span>'
-              : ''
-            ) +
-          '</div>' +
-          '<div class="col-sm-8 text-center">' +
-            (start + 1) + '-' + (start + data.docs.length) + ' of ' + data.numFound +
-          '</div>' +
-          '<div class="col-sm-2">' +
-            ((data.hasOwnProperty('next'))
-              ? '<span class="btn btn-default btn-xs pull-right" accesskey="n" onclick="personQuery(\'' + str + '\', ' + data.next + ')">&gt;&gt;</span>'
-              : ''
-            ) +
-          '</div>' +
-        '</td>' +
-      '</tr>';
-    }
+    table.innerHTML = '';
+    tableHeader(table, data, 'personQuery', start);
     // Iterate over results
     data.docs.forEach((doc) => {
       // id for the import button
@@ -361,7 +366,6 @@ function importPersonData(dataId) {
 // Lauches a query to the external vocabulary server and fills in the results in the table element of the dialog searchBox
 
 /* arguments:
- *  - str (String): text to search for
  *  - start (Integer): start position of the results (for paginated results)
  * the result of the query is a JSON object with at least:
  *  - numFound (Integer): total number of results
@@ -381,46 +385,26 @@ function importPersonData(dataId) {
  *  - per_page: the number of results to return per page
  */
 
-function publicationQuery(str, start) {
+function publicationQuery(start) {
+  str = document.getElementById(pubSearchBoxId).value;
+  let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
   if (!str) {
+    table.innerHTML = searchEmpty;
     return;
   }
   if (!start) {
     start = 0;
   }
-  // Clear table content
-  let table = document.querySelector('#' +  pubSearchResultsId + ' tbody');
-  table.innerHTML = loading;
+  // Set loading animation
+  table.innerHTML = searchLoading;
   // Vocabulary search REST call
   fetch("/covoc/publications?q=" + str + '&from=' + start + '&per_page=' + page_size)
   .then(response => response.json())
   .then(data => {
-    table.innerHTML = ''
+    table.innerHTML = '';
+    tableHeader(table, data, 'publicationQuery', start);
     // Grab the Lirias host
-    liriasHost = data.lirias
-    // Add pagination header
-    if (data.hasOwnProperty('prev') || data.hasOwnProperty('next')) {
-      table.innerHTML += 
-      '<tr>' + 
-        '<td class="row" colspan="2">' +
-          '<div class="col-sm-2">' +
-            ((data.hasOwnProperty('prev'))
-              ? '<span class="btn btn-default btn-xs pull-left" accesskey="p" onclick="publicationQuery(\'' + str + '\', ' + data.prev + ')">&lt;&lt;</span>'
-              : ''
-            ) +
-          '</div>' +
-          '<div class="col-sm-8 text-center">' +
-            (start + 1) + '-' + (start + data.docs.length) + ' of ' + data.numFound +
-          '</div>' +
-          '<div class="col-sm-2">' +
-            ((data.hasOwnProperty('next'))
-              ? '<span class="btn btn-default btn-xs pull-right" accesskey="n" onclick="publicationQuery(\'' + str + '\', ' + data.next + ')">&gt;&gt;</span>'
-              : ''
-            ) +
-          '</div>' +
-        '</td>' +
-      '</tr>';
-    }
+    liriasHost = data.lirias;
     // Iterate over results
     data.docs.forEach((doc) => {
       // id for the import button
