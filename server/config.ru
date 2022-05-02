@@ -18,7 +18,7 @@ class App < Roda
 
   solr_host = ENV['SOLR_HOST'] || 'http://localhost:8983'
   limo_host = ENV['LIMO_HOST'] || 'limo.libis.be'
-  lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2.kuleuven.be'
+  lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2repo.kuleuven.be'
   logging = ENV['LOG_LEVEL'] == 'debug'
 
   solr = Faraday.new(solr_host, params: {indent: false}) do |f|
