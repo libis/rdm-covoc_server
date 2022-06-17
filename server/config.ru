@@ -234,6 +234,24 @@ class App < Roda
       
     end
 
+
+    # Entrypoint for claimer
+    r.post 'claimer' do
+      # respose
+      res = { status: "OK" }
+    
+      # Write the file for Lirias import
+      begin
+        File.open("/data/json/#{SecureRandom.urlsafe_base64}.json", 'w') { |file| file.write(request.body.gets) }
+      rescue => exception
+        res = { status: "failed", error: exception }
+      end
+        
+      # Finally, return the response
+      res
+        
+    end
+
   end
 
 end
