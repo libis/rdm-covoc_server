@@ -6,6 +6,7 @@ require 'roda'
 require 'faraday'
 require 'httpx/adapters/faraday'
 require 'awesome_print'
+require 'digest'
 
 class App < Roda
 
@@ -42,6 +43,8 @@ class App < Roda
     f.response :logger, nil, {headers: true, bodies: false} if logging
     f.adapter :httpx
   end
+
+  sha256 = Digest::SHA256.new
 
   route do |r|
 
@@ -242,7 +245,7 @@ class App < Roda
     
       # Write the file for Lirias import
       begin
-        File.open("/data/json/#{SecureRandom.urlsafe_base64}.json", 'w') { |file| file.write(request.body.gets) }
+        File.open("/data/json/#{sha256.hexdigest request.body.gets}.json", 'w') { |file| file.write(request.body.gets) }
       rescue => exception
         res = { status: "failed", error: exception }
       end
