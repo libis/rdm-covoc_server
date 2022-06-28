@@ -14,6 +14,9 @@ class App < Roda
   plugin :json
   plugin :typecast_params
   plugin :public
+  plugin :type_routing, types: {
+    xml: 'application/xml'
+  }
 
   NO_RESULT = { numFound: 0, start: 0, docs: [] }
 
@@ -21,6 +24,9 @@ class App < Roda
   limo_host = ENV['LIMO_HOST'] || 'limo.libis.be'
   lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2repo.kuleuven.be'
   logging = ENV['LOG_LEVEL'] == 'debug'
+  oaaai_host = ENV['OAAAI_HOST'] || 'https://aai.openaire.eu'
+  oa_host = ENV['OPEN_AIRE_HOST'] || 'https://api.openaire.eu'
+  openAireCredentials = ENV['OPEN_AIRE_CREDS'] || 'ODQzYTU1ZjYtYjk4Ni00ZDUzLWE0ZjItYjgwYmI1NmZkNzA5OkFNMXE4TGpvR0hLV2VZQjVOWmhwZ3BYa0lRQkFaVnkwcWVGOEtjMy1XTlB0dkFseF9BTEdRd2RGS1BvMWQtc2dXR3hfOWRacDhRc3hWS1dGb0hqWUtNYw=='
 
   solr = Faraday.new(solr_host, params: {indent: false}) do |f|
     f.use Faraday::Request::UrlEncoded
@@ -44,7 +50,25 @@ class App < Roda
     f.adapter :httpx
   end
 
+  oaaai = Faraday.new(oaaai_host, ssl: {verify: false}) do |f|
+    f.use Faraday::Request::UrlEncoded
+    f.response :logger, nil, {headers: true, bodies: false} if logging
+    f.adapter :httpx
+  end
+
+  oa = Faraday.new(oa_host, ssl: {verify: false}) do |f|
+    f.use Faraday::Request::UrlEncoded
+    f.request :json
+    f.response :json
+    f.response :logger, nil, {headers: true, bodies: false} if logging
+    f.adapter :httpx
+  end
+
   sha256 = Digest::SHA256.new
+
+  oamutex = Mutex.new
+  oatoken = ''
+  aoexpires = Time.now
 
   route do |r|
 
@@ -253,6 +277,32 @@ class App < Roda
       # Finally, return the response
       res
         
+    end
+
+    # Entrypoint for openAIRE
+    r.get 'openaire/search/datasets' do
+      # get token if needed
+      oamutex.synchronize do
+        if (oatoken == '' || aoexpires < (Time.now + 60*60))
+          aoexpires = Time.now + 60*60
+          res = oaaai.post('/oidc/token', nil, ) do |req|
+            req.headers[:Authorization] = 'Basic ' + openAireCredentials
+            req.params['grant_type'] = 'client_credentials'
+            req.options.timeout = 2
+          end
+          oatoken = JSON.parse(res.body)&.dig('access_token')
+        end
+      end
+      # search openAIRE
+      res = oa.get('/search/datasets', nil, ) do |req|
+        req.headers[:Authorization] = 'Bearer ' + oatoken
+        req.params = r.params
+        req.options.timeout = 2
+      end
+      # Accept: application/xml -> return xml (Content-type: application/xml)
+      r.xml { res.body }
+      # otherwise return xml as text (Content-Type: text/html; charset=UTF-8)
+      res.body
     end
 
   end
