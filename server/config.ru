@@ -52,14 +52,14 @@ class App < Roda
 
   oaaai = Faraday.new(oaaai_host, ssl: {verify: false}) do |f|
     f.use Faraday::Request::UrlEncoded
+    f.request :json
+    f.response :json
     f.response :logger, nil, {headers: true, bodies: false} if logging
     f.adapter :httpx
   end
 
   oa = Faraday.new(oa_host, ssl: {verify: false}) do |f|
     f.use Faraday::Request::UrlEncoded
-    f.request :json
-    f.response :json
     f.response :logger, nil, {headers: true, bodies: false} if logging
     f.adapter :httpx
   end
@@ -283,14 +283,16 @@ class App < Roda
     r.get 'openaire/search/datasets' do
       # get token if needed
       oamutex.synchronize do
-        if (oatoken == '' || aoexpires < (Time.now + 60*60))
-          aoexpires = Time.now + 60*60
-          res = oaaai.post('/oidc/token', nil, ) do |req|
+        if oatoken == '' || aoexpires < Time.now
+          resTokenR = oaaai.post('/oidc/token', nil, ) do |req|
             req.headers[:Authorization] = 'Basic ' + openAireCredentials
             req.params['grant_type'] = 'client_credentials'
             req.options.timeout = 2
           end
-          oatoken = JSON.parse(res.body)&.dig('access_token')
+          resToken = resTokenR.body
+          aoexpires = Time.now + resToken['expires_in'].to_i
+          # puts('aoexpires ' + aoexpires.strftime('%m/%d/%Y %H:%M %p'))
+          oatoken = resToken['access_token']
         end
       end
       # search openAIRE
