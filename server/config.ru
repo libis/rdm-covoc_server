@@ -268,8 +268,9 @@ class App < Roda
       res = { status: "OK" }
     
       # Write the file for Lirias import
+      content = request.body.gets
       begin
-        File.open("/data/json/#{sha256.hexdigest request.body.gets}.json", 'w') { |file| file.write(request.body.gets) }
+        File.open("/data/json/#{sha256.hexdigest content}.json", 'w') { |file| file.write(content) }
       rescue => exception
         res = { status: "failed", error: exception }
       end
