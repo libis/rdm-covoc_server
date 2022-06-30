@@ -291,7 +291,7 @@ class App < Roda
             req.options.timeout = 2
           end
           resToken = resTokenR.body
-          aoexpires = Time.now + resToken['expires_in'].to_i
+          aoexpires = Time.now + resToken['expires_in'].to_i - 60
           # puts('aoexpires ' + aoexpires.strftime('%m/%d/%Y %H:%M %p'))
           oatoken = resToken['access_token']
         end
