@@ -134,6 +134,7 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
       }
     });
   }
+  bind_bsui_components();
 }
 
 // Generic function that add a search button to the name input fields
