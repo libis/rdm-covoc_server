@@ -8,6 +8,61 @@ require 'httpx/adapters/faraday'
 require 'awesome_print'
 require 'digest'
 
+class OpenAire
+
+  oa_auth_host = ENV['OAAAI_HOST'] || 'https://aai.openaire.eu'
+  oa_host = ENV['OPEN_AIRE_HOST'] || 'https://api.openaire.eu'
+  logging = ENV['LOG_LEVEL'] == 'debug'
+  openAireCredentials = File.read(ENV['OPEN_AIRE_CREDS']).strip
+
+  oaauth = Faraday.new(oa_auth_host, ssl: {verify: false}) do |f|
+    f.use Faraday::Request::UrlEncoded
+    f.request :json
+    f.response :json
+    f.response :logger, nil, {headers: true, bodies: false} if logging
+    f.adapter :httpx
+  end
+
+  oa = Faraday.new(oa_host, ssl: {verify: false}) do |f|
+    f.use Faraday::Request::UrlEncoded
+    f.response :logger, nil, {headers: true, bodies: false} if logging
+    f.adapter :httpx
+  end
+
+  oamutex = Mutex.new
+  oatoken = ''
+  aoexpires = Time.now
+
+  authorization = lambda do
+    oamutex.synchronize do
+      if oatoken == '' || aoexpires < Time.now
+        resTokenR = oaauth.post('/oidc/token', nil, ) do |req|
+          req.headers[:Authorization] = 'Basic ' + openAireCredentials
+          req.params['grant_type'] = 'client_credentials'
+          req.options.timeout = 2
+        end
+        resToken = resTokenR.body
+        aoexpires = Time.now + resToken['expires_in'].to_i - 60
+        # puts('aoexpires ' + aoexpires.strftime('%m/%d/%Y %H:%M %p'))
+        oatoken = resToken['access_token']
+      end
+    end
+    oatoken
+  end
+
+  @@authorization = authorization
+  @@oa = oa
+
+  def search(path)
+    auth = 'Bearer ' + @@authorization.call
+    res = @@oa.get("/search" + path, nil, ) do |req|
+      req.headers[:Authorization] = auth 
+      yield req
+    end
+  end
+
+end
+
 class App < Roda
 
   opts[:add_script_name] = 'covoc'
@@ -24,9 +79,6 @@ class App < Roda
   limo_host = ENV['LIMO_HOST'] || 'limo.libis.be'
   lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2repo.kuleuven.be'
   logging = ENV['LOG_LEVEL'] == 'debug'
-  oaaai_host = ENV['OAAAI_HOST'] || 'https://aai.openaire.eu'
-  oa_host = ENV['OPEN_AIRE_HOST'] || 'https://api.openaire.eu'
-  openAireCredentials = ENV['OPEN_AIRE_CREDS'] || 'ODQzYTU1ZjYtYjk4Ni00ZDUzLWE0ZjItYjgwYmI1NmZkNzA5OkFNMXE4TGpvR0hLV2VZQjVOWmhwZ3BYa0lRQkFaVnkwcWVGOEtjMy1XTlB0dkFseF9BTEdRd2RGS1BvMWQtc2dXR3hfOWRacDhRc3hWS1dGb0hqWUtNYw=='
 
   solr = Faraday.new(solr_host, params: {indent: false}) do |f|
     f.use Faraday::Request::UrlEncoded
@@ -50,25 +102,8 @@ class App < Roda
     f.adapter :httpx
   end
 
-  oaaai = Faraday.new(oaaai_host, ssl: {verify: false}) do |f|
-    f.use Faraday::Request::UrlEncoded
-    f.request :json
-    f.response :json
-    f.response :logger, nil, {headers: true, bodies: false} if logging
-    f.adapter :httpx
-  end
-
-  oa = Faraday.new(oa_host, ssl: {verify: false}) do |f|
-    f.use Faraday::Request::UrlEncoded
-    f.response :logger, nil, {headers: true, bodies: false} if logging
-    f.adapter :httpx
-  end
-
   sha256 = Digest::SHA256.new
-
-  oamutex = Mutex.new
-  oatoken = ''
-  aoexpires = Time.now
+  oa = OpenAire.new
 
   route do |r|
 
@@ -264,11 +299,11 @@ class App < Roda
 
     # Entrypoint for claimer
     r.post 'claimer' do
-      # respose
       res = { status: "OK" }
     
-      # Write the file for Lirias import
-      content = request.body.gets
+      # read the r.body stream
+      content = r.body.read
+      # Write the content in a file for Lirias import
       begin
         File.open("/data/json/#{sha256.hexdigest content}.json", 'w') { |file| file.write(content) }
       rescue => exception
@@ -282,30 +317,13 @@ class App < Roda
 
     # Entrypoint for openAIRE
     r.get 'openaire/search/datasets' do
-      # get token if needed
-      oamutex.synchronize do
-        if oatoken == '' || aoexpires < Time.now
-          resTokenR = oaaai.post('/oidc/token', nil, ) do |req|
-            req.headers[:Authorization] = 'Basic ' + openAireCredentials
-            req.params['grant_type'] = 'client_credentials'
-            req.options.timeout = 2
-          end
-          resToken = resTokenR.body
-          aoexpires = Time.now + resToken['expires_in'].to_i - 60
-          # puts('aoexpires ' + aoexpires.strftime('%m/%d/%Y %H:%M %p'))
-          oatoken = resToken['access_token']
+      r.xml do
+        res = oa.search('/datasets') do |req|
+          req.params = r.params
+          req.options.timeout = 2
         end
+        res.body
       end
-      # search openAIRE
-      res = oa.get('/search/datasets', nil, ) do |req|
-        req.headers[:Authorization] = 'Bearer ' + oatoken
-        req.params = r.params
-        req.options.timeout = 2
-      end
-      # Accept: application/xml -> return xml (Content-type: application/xml)
-      r.xml { res.body }
-      # otherwise return xml as text (Content-Type: text/html; charset=UTF-8)
-      res.body
     end
 
   end
