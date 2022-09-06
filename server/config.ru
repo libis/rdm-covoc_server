@@ -144,12 +144,13 @@ class App < Roda
         solr.get('/solr/authors/email') do |req|
           req.params.merge!(p)
         end
-      when /^(\b[a-zA-z]+,?)+$/
+      when /^(\b[a-zA-z]+,?\s*)+$/
         solr.get('/solr/authors/name') do |req|
           req.params.merge!(p)
         end
       else
         solr.get('/solr/authors/any') do |req|
+          p[:q] = p[:q].gsub(".", "*")
           req.params.merge!(p)
         end
       end
