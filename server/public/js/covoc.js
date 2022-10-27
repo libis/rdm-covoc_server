@@ -30,10 +30,10 @@ var personElementIdAttribute = 'data-person-element-id';
 var personSearchIconText = 'Search in KU Leuven';
 
 // Selector for all the author compound fields
-var authorSelector = "#metadata_author ~ .dataset-field-values .edit-compound-field";
+var authorSelector = "#metadata_author";
 
 // Selector for all the contact compound fields
-var contactSelector = "#metadata_datasetContact ~ .dataset-field-values .edit-compound-field";
+var contactSelector = "#metadata_datasetContact";
 
 var pubModalId = 'publication-modal';
 var pubModalTitle = 'Search for publication in Lirias';
@@ -45,13 +45,19 @@ var pubElementIdAttribute = 'data-publication-element-id';
 var pubSearchIconText = 'Search in Lirias';
 
 // Selector for all the publication compound fields
-var publicationSelector = "#metadata_publication ~ .dataset-field-values .edit-compound-field";
+var publicationSelector = "#metadata_publication";
 
 /* The browser will run this code the first time the editor is opened and each time a multiple field instance is 
  * added or removed. This code is reposible for creating the HTML for the dialog box, adding a search button to 
  * the name fields and creating the triggers for initializing the dialog box and the search action itself.
  */
-$(document).ready(function() {
+if (document.readyState !== 'loading') {
+  init();
+} else {
+  document.addEventListener('DOMContentLoaded', init);
+}
+
+function init() {
 
   // Create person search modal
   createModal(personModalId, personModalTitle, personModalPlaceholder, personModalHelptext, 
@@ -70,7 +76,7 @@ $(document).ready(function() {
   // Put search button after each Lirias ID field
   putSearchIcon(publicationSelector, 3, pubElementIdAttribute, pubModalId, pubSearchIconText);
 
-});
+};
 
 // Generic function to create a serch box
 function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, elementIdAttribute, queryFunction) {
@@ -140,7 +146,9 @@ function createModal(id, title, placeholder, helptext, searchBoxId, resultsId, e
 // Generic function that add a search button to the name input fields
 function putSearchIcon(selector, childNr, elementIdAttribute, modalId, searchIconText) {
   // Iterate over compund elements
-  document.querySelectorAll(selector).forEach(element => {
+  let elements = $(selector)?.parent()?.parent()?.find(".dataset-field-values .edit-compound-field");
+  for(let i = 0; i < elements?.length; i++) {
+    let element = elements[i];
     // 'search_added' class marks elements that have already been processed
     if (!element.classList.contains('search_added')) {
       element.classList.add('search_added');
@@ -170,7 +178,7 @@ function putSearchIcon(selector, childNr, elementIdAttribute, modalId, searchIco
       // ... and add that to the encapsulating element.
       metadataField.appendChild(wrapper);
     }
-  })
+  }
 }
 
 // Creates a unique id that can be used as element id attribute
