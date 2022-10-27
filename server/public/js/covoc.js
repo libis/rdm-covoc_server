@@ -51,11 +51,7 @@ var publicationSelector = "#metadata_publication";
  * added or removed. This code is reposible for creating the HTML for the dialog box, adding a search button to 
  * the name fields and creating the triggers for initializing the dialog box and the search action itself.
  */
-if (document.readyState !== 'loading') {
-  init();
-} else {
-  document.addEventListener('DOMContentLoaded', init);
-}
+$(document).ready(init)
 
 function init() {
 
