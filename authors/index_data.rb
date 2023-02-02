@@ -78,7 +78,7 @@ File.open(ARGV[0], 'rt') do |file|
   a = CSV::WithProgressBar.parse(file, **options)
   bar = TTY::ProgressBar.new("Formatting   (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]", total: a.size) if IsTTY
   a = a.reduce([]) do |memo, data|
-    memo << Indexer.transform(data)
+    memo << Indexer.transform(data) if data['Username']
     bar.advance if IsTTY
     memo
   end
