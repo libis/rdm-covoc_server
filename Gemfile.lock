@@ -10,11 +10,11 @@ GEM
     http-2-next (0.5.0)
     httpx (0.19.3)
       http-2-next (>= 0.4.1)
-    nio4r (2.5.8)
-    puma (5.6.2)
+    nio4r (2.5.9)
+    puma (6.2.2)
       nio4r (~> 2.0)
-    rack (2.2.3)
-    roda (3.53.0)
+    rack (3.0.7)
+    roda (3.68.0)
       rack
     rsolr (2.5.0)
       builder (>= 2.1.2)
@@ -33,17 +33,18 @@ GEM
     unicode-display_width (2.1.0)
 
 PLATFORMS
+  ruby
   x86_64-linux
 
 DEPENDENCIES
   awesome_print
   faraday
   httpx
-  puma
+  puma (>= 5.6.4)
   roda
   rsolr
   tty-progressbar
   tty-spinner
 
 BUNDLED WITH
-   2.2.32
+   2.1.4
