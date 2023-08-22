@@ -11,7 +11,7 @@ GEM
     httpx (0.19.3)
       http-2-next (>= 0.4.1)
     nio4r (2.5.9)
-    puma (6.2.2)
+    puma (6.3.1)
       nio4r (~> 2.0)
     rack (3.0.7)
     roda (3.68.0)
@@ -40,7 +40,7 @@ DEPENDENCIES
   awesome_print
   faraday
   httpx
-  puma (>= 5.6.4)
+  puma (>= 6.3.1)
   roda
   rsolr
   tty-progressbar
