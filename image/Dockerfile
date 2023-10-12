@@ -28,4 +28,4 @@ ENV PATH="/home/app/bin:${PATH}"
 COPY --chown=app:app . ./
 RUN chmod +x ./bin/*
 
-CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
+CMD ["bundle", "exec", "puma", "-p", "3000"]
