@@ -229,19 +229,27 @@ class App < Roda
         'start' => res['from'],
         'docs' => res['data'].map do |data|
           # Can't trust output to be single value
-          creator = [data.dig('display','creator')].flatten.first
-          title = [data.dig('display','title')].flatten.first
-          ispartof = [data.dig('display','ispartof')].flatten.first
+          creator = [data.dig('creator')].flatten.first
+          title = [data.dig('title')].flatten.first
+          ispartof = [data.dig('ispartof')].flatten.first
           url = [data.dig('links', 'backlink')].flatten.last
           doi = nil
           issn = nil
-          [data.dig('display','identifier')].flatten.each do |identifier|
+          [data.dig('identifier')].flatten.each do |identifier|
             next unless identifier
-            doi ||= identifier.scan(/\$\$CDOI:\$\$V([^$]*)/)&.first&.first
-            issn ||= identifier.scan(/\$\$CISSN:\$\$V([^$]*)/)&.first&.first
-           end
+            doi ||= identifier.dig('DOI')
+            issn ||= identifier.dig('ISSN')
+          end
+          id = nil
+          [data.dig('source_id')].flatten.each do |src_id|
+            next if id
+            if src_id =~ /^LIRIAS(\d+)$/i
+              id = $1
+            end
+          end
+          id ||= data.dig('id')
           {
-            id: data.dig('id')&.gsub(/^LIRIAS/i, ''),
+            id: id,
             title: title,
             citation: "#{creator}. &quot;#{title}.&quot; #{ispartof}",
             link: url
