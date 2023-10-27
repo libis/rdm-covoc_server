@@ -160,8 +160,7 @@ class App < Roda
         return NO_RESULT
       end
 
-      # Parse JSON result 
-      res = JSON.parse(res.body)&.dig('response')
+      res = res.body['response']
       return NO_RESULT unless res
 
       # Set start, next and previous values
