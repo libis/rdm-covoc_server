@@ -1,7 +1,7 @@
 STAGE ?= dev
 
 include env.$(STAGE)
-include .env
+-include .env
 export
 
 .SILENT:
@@ -31,11 +31,11 @@ update: ## Update the script files in the image
 	echo "Updating files in Docker image ..."
 	$(CP) Gemfile*      image/
 	$(CP) bin/          image/bin/
-	$(CP)	server/       image/
+	$(CP) server/       image/
 	$(CP) authors/      image/authors/
 
 run: ## Run the server locally
-	cd server && bundle exec rackup -o 0.0.0.0 -p 9292
+	cd server && bundle exec puma -p 9292 config.ru
 
 covoc_drop:
 	./bin/drop_index.sh
