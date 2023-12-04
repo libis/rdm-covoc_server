@@ -346,7 +346,7 @@ These environment variables are automatically set in the Makefile from the rdm-d
     environment:
       TZ: "Europe/Brussels"
       SOLR_HOST: http://index:8983
-      LIMO_HOST: limo.q.libis.be
+      LIMO_TOKEN: abcdef0123456789
       LIRIAS_HOST: https://lirias2test.libis.kuleuven.be
       INDEX_DATA_DIR: /index/data
       DATA_DIR: /data
