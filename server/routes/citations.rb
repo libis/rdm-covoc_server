@@ -15,7 +15,7 @@ class App
   end
 
   # Entrypoint for the citation lookup
-  hash_branch 'citations' do |r|
+  hash_branch 'citation' do |r|
     r.get do
 
       # Get parameters
