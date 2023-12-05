@@ -62,7 +62,7 @@ class App
         return NO_RESULT
       end
 
-      res = res.body['response']
+      res = JSON.parse(res.body)&.dig('response')
       return NO_RESULT unless res
 
       # Set start, next and previous values
