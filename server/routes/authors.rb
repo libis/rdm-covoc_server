@@ -7,6 +7,7 @@ class App
 
   logging = ENV['LOG_LEVEL'] == 'debug'
   solr_host = ENV['SOLR_HOST'] || 'http://localhost:8983'
+  lirias_host = ENV['LIRIAS_HOST'] || 'https://lirias2repo.kuleuven.be'
 
   solr = Faraday.new(solr_host, params: {indent: false}) do |f|
     f.use Faraday::Request::UrlEncoded
