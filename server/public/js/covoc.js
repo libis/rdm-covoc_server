@@ -408,8 +408,6 @@ function publicationQuery(start) {
   .then(data => {
     table.innerHTML = '';
     tableHeader(table, data, 'publicationQuery', start);
-    // Grab the Lirias host
-    liriasHost = data.lirias;
     // Iterate over results
     data.docs.forEach((doc) => {
       // id for the import button

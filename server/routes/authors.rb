@@ -71,9 +71,6 @@ class App
       res['next'] = next_start if next_start < res['numFound'] + min_from
       res['prev'] = prev_start if res['start'] != min_from
 
-      # Pass the Lirias host to the client
-      res['lirias'] = lirias_host
-
       # Finally, return the response
       res
 
