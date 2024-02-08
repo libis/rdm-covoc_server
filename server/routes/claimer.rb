@@ -8,7 +8,7 @@ class App
 
   # Entrypoint for claimer
   hash_branch 'claimer' do |r|
-    r.get do |r|
+    r.post do
       res = { status: "OK" }
 
       # read the r.body stream
