@@ -12,7 +12,7 @@ class App
   logging = ENV['LOG_LEVEL'] == 'debug'
   limo_token = ENV['LIMO_TOKEN']
 
-  limo = Faraday.new('https://services4.libis.be/bridge', params: {token: limo_token}) do |f|
+  limo = Faraday.new('https://services.libis.be/search/lirias', params: {token: limo_token}) do |f|
     f.use Faraday::Request::UrlEncoded
     f.request :json
     f.response :json
