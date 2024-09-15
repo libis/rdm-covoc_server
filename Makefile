@@ -33,6 +33,7 @@ update: ## Update the script files in the image
 	$(CP) bin/          image/bin/
 	$(CP) server/       image/
 	$(CP) authors/      image/authors/
+	$(CP) lib/		    image/lib/
 
 run: ## Run the server locally
 	cd server && bundle exec puma -p 9292 config.ru

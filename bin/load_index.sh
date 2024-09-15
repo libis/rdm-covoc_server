@@ -9,7 +9,7 @@ DATA_FILE="${DATA_FILE:-$2}"
 
 echo "Indexing data from ${DATA_FILE} into ${CORE} ..."
 
-bundle exec ruby ${CORE}/index_data.rb "$DATA_FILE"
+bundle exec ruby ${CORE}/index_data.rb "$DATA_FILE" "${CORE}"
 
 echo "Reloading ${CORE} index ..."
 
