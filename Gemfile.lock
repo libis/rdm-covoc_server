@@ -42,7 +42,7 @@ DEPENDENCIES
   awesome_print (~> 1.9)
   faraday (~> 2.7)
   httpx (~> 1.1)
-  puma (~> 6.4)
+  puma (~> 6.4, >= 6.4.3)
   roda (~> 3.75, >= 3.75.0)
   rsolr (~> 2.5)
   tty-progressbar (~> 0.18)
