@@ -12,10 +12,10 @@ GEM
     http-2-next (1.0.1)
     httpx (1.1.5)
       http-2-next (>= 1.0.1)
-    nio4r (2.7.3)
+    nio4r (2.7.4)
     puma (6.4.3)
       nio4r (~> 2.0)
-    rack (3.0.10)
+    rack (3.0.16)
     roda (3.78.0)
       rack
     rsolr (2.5.0)
