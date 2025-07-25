@@ -15,7 +15,7 @@ GEM
     nio4r (2.7.0)
     puma (6.4.2)
       nio4r (~> 2.0)
-    rack (3.0.10)
+    rack (3.0.16)
     roda (3.78.0)
       rack
     rsolr (2.5.0)
