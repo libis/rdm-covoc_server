@@ -5,7 +5,7 @@ ENV LANG=C.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
- && apt-get -qq install -y --no-install-recommends build-essential curl jq \
+ && apt-get -qq install -y --no-install-recommends build-essential curl jq adduser \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
