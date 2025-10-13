@@ -15,8 +15,8 @@ GEM
     nio4r (2.7.4)
     puma (6.4.3)
       nio4r (~> 2.0)
-    rack (3.1.16)
-    roda (3.93.0)
+    rack (3.2.3)
+    roda (3.96.0)
       rack
     rsolr (2.5.0)
       builder (>= 2.1.2)
@@ -43,10 +43,10 @@ DEPENDENCIES
   faraday (~> 2.7)
   httpx (~> 1.1)
   puma (~> 6.4, >= 6.4.3)
-  roda (~> 3.79, >= 3.79.0)
+  roda (~> 3.94, >= 3.94.0)
   rsolr (~> 2.5)
   tty-progressbar (~> 0.18)
   tty-spinner (~> 0.9)
 
 BUNDLED WITH
-   2.4.22
+   2.3.27
