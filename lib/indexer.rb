@@ -22,6 +22,26 @@ class Indexer
     bar&.finish
   end
 
+  # Replaces the full index content: the delete and the added docs only become
+  # visible with the single commit at the end, so searches never see an empty index.
+  def replace(data:, per_page: 100)
+    bar = @tty ? TTY::ProgressBar.new(
+      "Indexing data (:percent)\tETA: :eta_time (:eta) [:current/:total @ :rate/s]",
+      total: data.size
+    ) : nil
+    bar&.advance(0)
+    @solr.delete_by_query('*:*')
+    data.each_slice(per_page) do |slice|
+      response = @solr.add(slice)
+      unless response.response[:status] == 200
+        puts "Error: #{response.response[:body].inspect}"
+      end
+      bar&.advance(per_page)
+    end
+    @solr.commit
+    bar&.finish
+  end
+
   def get_docs(page:, rows:)
     response = @solr.paginate page, rows, 'select', params: {q: '*:*'}
 

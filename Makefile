@@ -33,6 +33,7 @@ update: ## Update the script files in the image
 	$(CP) bin/          image/bin/
 	$(CP) server/       image/
 	$(CP) authors/      image/authors/
+	$(CP) labels/       image/labels/
 	$(CP) lib/		    image/lib/
 
 run: ## Run the server locally

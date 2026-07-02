@@ -1,0 +1,23 @@
+  <requestHandler name="/any" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">none</str>
+      <str name="wt">json</str>
+      <str name="indent">false</str>
+      <int name="rows">20</int>
+      <int name="minExactCount">400</int>
+      <float name="tie">0.1</float>
+      <str name="defType">edismax</str>
+      <str name="fl">scheme labelName code funderNumber sapNumber grantNumber acronym agency value score</str>
+      <str name="qf">
+        funderNumber^20
+        sapNumber^20
+        grantNumber^15
+        acronym^15
+        labelName^10
+        labelName_part^5
+        acronym_part^5
+      </str>
+      <str name="sow">true</str>
+      <str name="q.op">AND</str>
+    </lst>
+  </requestHandler>

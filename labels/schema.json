@@ -1,0 +1,176 @@
+{
+  "add-field-type": [
+    {
+      "name": "code_text",
+      "class": "solr.TextField",
+      "docValues": false,
+      "uninvertible": false,
+      "indexAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.EdgeNGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 20
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.KeywordTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          }
+        ]
+      }
+    }, {
+      "name": "name_text",
+      "class": "solr.TextField",
+      "autoGeneratePhraseQueries": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "analyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }
+        ]
+      }
+    }, {
+      "name": "name_partial",
+      "class": "solr.TextField",
+      "autoGeneratePhraseQueries": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false,
+      "indexAnalyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }, {
+            "class": "solr.NGramFilterFactory",
+            "preserveOriginal": true,
+            "minGramSize": 3,
+            "maxGramSize": 8
+          }, {
+            "class": "solr.FlattenGraphFilterFactory"
+          }
+        ]
+      },
+      "queryAnalyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.ASCIIFoldingFilterFactory",
+            "preserveOriginal": true
+          }, {
+            "class": "solr.LowerCaseFilterFactory"
+          }
+        ]
+      }
+    }, {
+      "name": "litteral_string",
+      "class": "solr.StrField",
+      "indexed": false,
+      "stored": true,
+      "docValues": false,
+      "multiValued": false,
+      "uninvertible": false
+    }
+  ],
+  "add-field": [
+    {
+      "name": "scheme",
+      "type": "string",
+      "indexed": true,
+      "stored": true,
+      "required": true
+    }, {
+      "name": "labelName",
+      "type": "name_text",
+      "indexed": true,
+      "stored": true,
+      "required": true
+    }, {
+      "name": "code",
+      "type": "litteral_string",
+      "required": false
+    }, {
+      "name": "funderNumber",
+      "type": "code_text",
+      "indexed": true,
+      "stored": true,
+      "multiValued": true,
+      "required": false
+    }, {
+      "name": "sapNumber",
+      "type": "code_text",
+      "indexed": true,
+      "stored": true,
+      "multiValued": false,
+      "required": false
+    }, {
+      "name": "grantNumber",
+      "type": "code_text",
+      "indexed": true,
+      "stored": true,
+      "multiValued": false,
+      "required": false
+    }, {
+      "name": "acronym",
+      "type": "name_text",
+      "indexed": true,
+      "stored": true,
+      "required": false
+    }, {
+      "name": "agency",
+      "type": "litteral_string",
+      "required": false
+    }, {
+      "name": "value",
+      "type": "litteral_string",
+      "required": true
+    }
+  ],
+  "add-dynamic-field": [
+    {
+      "name": "*_part",
+      "type": "name_partial",
+      "indexed": true,
+      "stored": false
+    }
+  ],
+  "add-copy-field": [
+    {
+      "source": "labelName",
+      "dest": "labelName_part"
+    }, {
+      "source": "acronym",
+      "dest": "acronym_part"
+    }
+  ]
+}

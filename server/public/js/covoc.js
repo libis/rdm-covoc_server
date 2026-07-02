@@ -47,6 +47,34 @@ var pubSearchIconText = 'Search in Lirias';
 // Selector for all the publication compound fields
 var publicationSelector = "#metadata_publication";
 
+var labelModalId = 'label-modal';
+var labelModalTitle = 'Search for funding in Lirias';
+var labelModalPlaceholder = 'Search for funder number, SAP number or acronym ...';
+var labelModalHelptext =
+  "Type a funder number (e.g. 1100321N or AKUL/19/45), a SAP number (e.g. 55305864) " +
+  "or a project acronym and hit the Enter key to search.";
+var labelSearchBoxId = 'label-search-box';
+var labelSearchResultsId = 'label-search-results';
+var labelElementIdAttribute = 'data-label-element-id';
+var labelSearchIconText = 'Search in Lirias';
+var labelSchemes = 'c-fwo,c-internefondsen-bofiof,c-openaire-project';
+
+// Selector for all the funding information compound fields
+var grantNumberSelector = "#metadata_grantNumber";
+
+var collectionModalId = 'collection-modal';
+var collectionModalTitle = 'Search for virtual collection in Lirias';
+var collectionModalPlaceholder = 'Search for virtual collection ...';
+var collectionModalHelptext = 'Type (part of) the virtual collection name and hit the Enter key to search.';
+var collectionSearchBoxId = 'collection-search-box';
+var collectionSearchResultsId = 'collection-search-results';
+var collectionElementIdAttribute = 'data-collection-element-id';
+var collectionSearchIconText = 'Search in Lirias';
+var collectionSchemes = 'c-virtual-collection';
+
+// Selector for the virtual collection fields
+var virtualCollectionSelector = "#metadata_virtualCollection";
+
 /* The browser will run this code the first time the editor is opened and each time a multiple field instance is 
  * added or removed. This code is reposible for creating the HTML for the dialog box, adding a search button to 
  * the name fields and creating the triggers for initializing the dialog box and the search action itself.
@@ -71,6 +99,20 @@ function init() {
 
   // Put search button after each Lirias ID field
   putSearchIcon(publicationSelector, 3, pubElementIdAttribute, pubModalId, pubSearchIconText);
+
+  // Create funding label search modal
+  createModal(labelModalId, labelModalTitle, labelModalPlaceholder, labelModalHelptext,
+    labelSearchBoxId, labelSearchResultsId, labelElementIdAttribute, labelQuery);
+
+  // Put a search button after each funding identifier field
+  putSearchIcon(grantNumberSelector, 1, labelElementIdAttribute, labelModalId, labelSearchIconText);
+
+  // Create virtual collection search modal
+  createModal(collectionModalId, collectionModalTitle, collectionModalPlaceholder, collectionModalHelptext,
+    collectionSearchBoxId, collectionSearchResultsId, collectionElementIdAttribute, collectionQuery);
+
+  // Put a search button after each virtual collection field
+  putPrimitiveSearchIcon(virtualCollectionSelector, collectionElementIdAttribute, collectionModalId, collectionSearchIconText);
 
 };
 
@@ -173,6 +215,41 @@ function putSearchIcon(selector, childNr, elementIdAttribute, modalId, searchIco
       wrapper.appendChild(searchButton);
       // ... and add that to the encapsulating element.
       metadataField.appendChild(wrapper);
+    }
+  }
+}
+
+// Generic function that adds a search button to primitive (non-compound) input fields
+function putPrimitiveSearchIcon(selector, elementIdAttribute, modalId, searchIconText) {
+  // Iterate over the value input fields
+  let elements = $(selector)?.parent()?.parent()?.find(".dataset-field-values input[type='text']");
+  for(let i = 0; i < elements?.length; i++) {
+    let inputField = elements[i];
+    let container = inputField.parentElement;
+    // 'search_added' class marks elements that have already been processed
+    if (!container.classList.contains('search_added')) {
+      container.classList.add('search_added');
+      // We create a bootstrap input group ...
+      let wrapper = document.createElement('div');
+      wrapper.className = 'input-group';
+      wrapper.style.display = 'flex';
+      // ... containing the input field ...
+      wrapper.appendChild(inputField);
+      // ... and a new search button ...
+      let searchButton = document.createElement('button');
+      container.setAttribute('aria-describedby', searchButton.id);
+      searchButton.className = 'btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn';
+      searchButton.setAttribute('type', 'button');
+      searchButton.setAttribute('title', searchIconText);
+      searchButton.setAttribute('data-toggle', 'modal');
+      searchButton.setAttribute('data-target', '#' + modalId);
+      searchButton.setAttribute(elementIdAttribute, inputField.id);
+      let searchIcon = document.createElement('span');
+      searchIcon.className = 'glyphicon glyphicon-search no-text';
+      searchButton.appendChild(searchIcon);
+      wrapper.appendChild(searchButton);
+      // ... and add that to the encapsulating element.
+      container.appendChild(wrapper);
     }
   }
 }
@@ -519,4 +596,146 @@ function importPublicationData(dataId) {
   });
   // Close the dialog box when the import is done
   $('#' + pubModalId).modal('hide');
+}
+
+// Lauches a query to the external vocabulary server and fills in the results in the table element of the dialog searchBox
+
+/* arguments:
+ *  - start (Integer): start position of the results (for paginated results)
+ * the result of the query is a JSON object with at least:
+ *  - numFound (Integer): total number of results
+ *  - start (Integer): the start position of the current resultset
+ *  - prev (Integer - optional): the start position for the previous page, not present for first page
+ *  - next (Integer - optional): the start position for the next page, not present for last page
+ *  - docs (Array of JSON objects): list of results with:
+ *    - scheme (String): the Lirias label scheme
+ *    - labelName (String): the full Elements label name
+ *    - value (String): the identifier to fill in the Identifier field
+ *    - agency (String): the agency to fill in the Agency field
+ *    - sapNumber (String - optional): the SAP number of the project
+ *    - grantNumber (String - optional): the EC grant number of the project
+ * the query server is expected to accept these query parameters:
+ *  - q: the search term
+ *  - scheme: comma-separated list of label schemes to search
+ *  - from: the starting position for the results
+ *  - per_page: the number of results to return per page
+ */
+
+function labelQuery(start) {
+  str = document.getElementById(labelSearchBoxId).value;
+  let table = document.querySelector('#' +  labelSearchResultsId + ' tbody');
+  if (!str) {
+    table.innerHTML = searchEmpty;
+    return;
+  }
+  if (!start) {
+    start = 0;
+  }
+  // Set loading animation
+  table.innerHTML = searchLoading;
+  // Vocabulary search REST call
+  fetch("/covoc/labels?q=" + encodeURIComponent(str) + '&scheme=' + labelSchemes + '&from=' + start + '&per_page=' + page_size)
+  .then(response => response.json())
+  .then(data => {
+    table.innerHTML = '';
+    tableHeader(table, data, 'labelQuery', start);
+    // Iterate over results
+    data.docs.forEach((doc) => {
+      // id for the import button
+      let id = createId();
+      // Add a table row for the doc
+      table.innerHTML +=
+      '<tr title="' + strEncode(doc.labelName) + '">' +
+        '<td>' + strEncode(doc.value) + '</td>' +
+        '<td>' + strEncode(doc.agency) + '</td>' +
+        '<td>' + strEncode(doc.sapNumber || doc.grantNumber) + '</td>' +
+        '<td>' +
+          '<span id="' + id + '" ' +
+            'class="btn btn-default btn-xs glyphicon glyphicon-import pull-right" title="import" ' +
+            'data-covoc-agency="' + strEncode(doc.agency) + '" ' +
+            'data-covoc-value="' + strEncode(doc.value) + '" ' +
+            'onclick="importLabelData(\'' + id + '\');">' +
+          '</span>' +
+        '</td>' +
+      '</tr>';
+    });
+  });
+}
+
+// Import the query result data into the metadata form
+// arguments:
+// - dataID: identifier of the element that holds the covoc data attributes
+function importLabelData(dataId) {
+  // Get ID of target input element
+  let id = document.getElementById(labelSearchBoxId).getAttribute(labelElementIdAttribute);
+  // Get the agency from the data element attribute
+  let agency = strDecode(document.getElementById(dataId).getAttribute('data-covoc-agency'));
+  // Get the identifier value from the data element attribute
+  let value = strDecode(document.getElementById(dataId).getAttribute('data-covoc-value'));
+  // Get the identifier input field
+  let valueInput = document.getElementById(id);
+  // Up to the compound element
+  let compoundElement = valueInput.closest('.search_added');
+  // 1st child contains the input field for the agency
+  let agencyInput = compoundElement.children[0].querySelector('input');
+  // Fill-in agency and identifier
+  agencyInput.value = agency;
+  valueInput.value = value;
+  // Close the dialog box when the import is done
+  $('#' + labelModalId).modal('hide');
+}
+
+// Lauches a query for virtual collections and fills in the results in the table element of the dialog searchBox
+// Same query contract as labelQuery, the docs only need the labelName field.
+
+function collectionQuery(start) {
+  str = document.getElementById(collectionSearchBoxId).value;
+  let table = document.querySelector('#' +  collectionSearchResultsId + ' tbody');
+  if (!str) {
+    table.innerHTML = searchEmpty;
+    return;
+  }
+  if (!start) {
+    start = 0;
+  }
+  // Set loading animation
+  table.innerHTML = searchLoading;
+  // Vocabulary search REST call
+  fetch("/covoc/labels?q=" + encodeURIComponent(str) + '&scheme=' + collectionSchemes + '&from=' + start + '&per_page=' + page_size)
+  .then(response => response.json())
+  .then(data => {
+    table.innerHTML = '';
+    tableHeader(table, data, 'collectionQuery', start);
+    // Iterate over results
+    data.docs.forEach((doc) => {
+      // id for the import button
+      let id = createId();
+      // Add a table row for the doc
+      table.innerHTML +=
+      '<tr>' +
+        '<td>' + strEncode(doc.labelName) + '</td>' +
+        '<td>' +
+          '<span id="' + id + '" ' +
+            'class="btn btn-default btn-xs glyphicon glyphicon-import pull-right" title="import" ' +
+            'data-covoc-label="' + strEncode(doc.labelName) + '" ' +
+            'onclick="importCollectionData(\'' + id + '\');">' +
+          '</span>' +
+        '</td>' +
+      '</tr>';
+    });
+  });
+}
+
+// Import the virtual collection name into the metadata form
+// arguments:
+// - dataID: identifier of the element that holds the covoc data attributes
+function importCollectionData(dataId) {
+  // Get ID of target input element
+  let id = document.getElementById(collectionSearchBoxId).getAttribute(collectionElementIdAttribute);
+  // Get the label name from the data element attribute
+  let labelName = strDecode(document.getElementById(dataId).getAttribute('data-covoc-label'));
+  // Fill-in the virtual collection name
+  document.getElementById(id).value = labelName;
+  // Close the dialog box when the import is done
+  $('#' + collectionModalId).modal('hide');
 }
